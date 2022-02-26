@@ -11,7 +11,7 @@
             "preLaunchTask": "build",
             // If you have changed target frameworks, make sure to update the program path.
             "program": "${workspaceFolder}/HashCode2022/bin/Debug/net6.0/HashCode2022.dll",
-            "args": [],
+            "args": ["${workspaceFolder}/in", "${workspaceFolder}/out"],
             "cwd": "${workspaceFolder}/HashCode2022",
             // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
             "console": "internalConsole",

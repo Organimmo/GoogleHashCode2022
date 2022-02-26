@@ -10,38 +10,22 @@ namespace HashCode2022
     {
         static void Main(string[] args)
         {
-            string projectDirectory = Directory.GetParent(Environment.CurrentDirectory).Parent.Parent.Parent.FullName;
-
-            var filepath = Path.Combine(projectDirectory, $"Test.txt");
-            //File.WriteAllText(filepath, "test");
-
-            string workingDirectory = Environment.CurrentDirectory;
-
-            var paths = new List<Tuple<string, string>>()
+            if (args.Length != 2)
             {
-                new Tuple<string, string>(
-                    Path.Combine(workingDirectory, "a_an_example.in.txt"), 
-                    Path.Combine(projectDirectory, "a_an_example.out.txt")),
-                new Tuple<string, string>(
-                    Path.Combine(workingDirectory, "b_better_start_small.in.txt"), 
-                    Path.Combine(projectDirectory, "b_better_start_small.out.txt")),
-                new Tuple<string, string>(
-                    Path.Combine(workingDirectory, "c_collaboration.in.txt"), 
-                    Path.Combine(projectDirectory, "c_collaboration.out.txt")),
-                new Tuple<string, string>(
-                    Path.Combine(workingDirectory, "d_dense_schedule.in.txt"), 
-                    Path.Combine(projectDirectory, "d_dense_schedule.out.txt")),
-                new Tuple<string, string>(
-                    Path.Combine(workingDirectory, "e_exceptional_skills.in.txt"), 
-                    Path.Combine(projectDirectory, "e_exceptional_skills.out.txt")),
-                new Tuple<string, string>(
-                    Path.Combine(workingDirectory, "f_find_great_mentors.in.txt"), 
-                    Path.Combine(projectDirectory, "f_find_great_mentors.out.txt"))
-            };
+                Console.WriteLine("Usage: ./HashCode2022 <input_path> <output_path>");
+                return;
+            }
+            string inputPath = args[0];
+            string outputPath = args[1];
 
-            foreach (var pathItem in paths)
+            if (!Directory.Exists(outputPath))
             {
-                RunSingleFile(pathItem.Item1, pathItem.Item2);
+                Directory.CreateDirectory(outputPath);
+            }
+
+            foreach (var file in Directory.GetFiles(inputPath))
+            {
+                RunSingleFile(file, Path.Combine(outputPath, Path.GetFileName(file)));
             }
         }
 
