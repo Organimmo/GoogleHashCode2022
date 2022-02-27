@@ -38,39 +38,12 @@ namespace HashCode2022
             FileReader fileReader = new();
             FileData fileData = fileReader.ReadFrom(fileNameInput);
 
-            SetContributorZeroSkills(fileData);
-
             // Run the algorithm
-            FileDataManager fileDataManager = new(fileData);
-            fileDataManager.AssignAll();
+            Engine engine = new();
+            engine.Run(fileData);
 
             FileWriter fileWriter = new();
             fileWriter.WriteTo(fileNameOutput, fileData);
-        }
-
-        static void SetContributorZeroSkills(FileData fileData)
-        {
-            List<string> allSkills = new();
-            foreach (var project in fileData.Projects)
-            {
-                foreach (var skill in project.Skills)
-                {
-                    allSkills.Add(skill.Name);
-                }
-            }
-
-            allSkills = allSkills.Distinct().ToList();
-
-            foreach (var contributor in  fileData.Contributors)
-            {
-                foreach (var skill in allSkills)
-                {
-                    if (!contributor.Skills.Any(s => s.Name == skill))
-                    {
-                        contributor.Skills.Add(new Skill(skill));
-                    }
-                }
-            }
         }
     }
 }

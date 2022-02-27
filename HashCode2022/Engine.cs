@@ -7,31 +7,23 @@ using System.Threading.Tasks;
 
 namespace HashCode2022
 {
-    public class FileDataManager
+    public class Engine
     {
-        private readonly FileData _filedata;
-
-        public void AssignAll()
+        public void Run(FileData fileData)
         {
-            MatchProjectsAndContributors(_filedata.Projects);
+            SetContributorZeroSkills(fileData);
+
+            MatchProjectsAndContributors(fileData, fileData.Projects);
         }
 
-        public List<Project>? MatchProjectsAndContributors(List<Project> projects)
+        public List<Project>? MatchProjectsAndContributors(FileData fileData, List<Project> projects)
         {
             List<Project> assignedList = new();
             List<Project> notAssignedList = new();
-            if (!projects.Any())
+
+            foreach (var project in SortProjects(fileData.Projects))
             {
-                return projects;
-            }
-
-            List<Project> tempList = new();
-
-            SortProjects();
-
-            foreach (var project in projects)
-            {
-                var matchingContributors = ProjectCanBeAssigned(project);
+                var matchingContributors = ProjectCanBeAssigned(fileData, project);
                 if (matchingContributors != null)
                 {
                     AssignProject(project, matchingContributors);
@@ -46,19 +38,19 @@ namespace HashCode2022
 
             if (assignedList.Any())            {
 
-                return MatchProjectsAndContributors(notAssignedList);
+                return MatchProjectsAndContributors(fileData, notAssignedList);
             }
 
             return null;
         }
 
-        private List<Tuple<string, Contributor>>? ProjectCanBeAssigned(Project project)
+        private List<Tuple<string, Contributor>>? ProjectCanBeAssigned(FileData fileData, Project project)
         {
             List<Tuple<string, Contributor>> matchingContributors = new();
 
             foreach (var projectSkill in project.Skills)
             {
-                Contributor? contributor = FindBestContributor(project, projectSkill, matchingContributors.Select(c => c.Item2).ToList());
+                Contributor? contributor = FindBestContributor(fileData, project, projectSkill, matchingContributors.Select(c => c.Item2).ToList());
 
                 // Check if project can be assigned
                 if (contributor == null)
@@ -70,9 +62,9 @@ namespace HashCode2022
             return matchingContributors;
         }
 
-        private Contributor? FindBestContributor(Project project, Skill projectSkill, List<Contributor> matchingContributors)
+        private Contributor? FindBestContributor(FileData fileData, Project project, Skill projectSkill, List<Contributor> matchingContributors)
         {
-            foreach (var contributor in _filedata.Contributors
+            foreach (var contributor in fileData.Contributors
                 .OrderBy(d => d.AvailableDate)
                 .OrderByDescending(d => d.HighestSkillLevel))
             {
@@ -158,19 +150,39 @@ namespace HashCode2022
             }
         }
 
-        public void SortProjects()
+        public IEnumerable<Project> SortProjects(List<Project> projects)
         {
             // Switch around to optimise
-            _filedata.Projects
+            return projects
                 .OrderBy(p => p.Duration)
                 .OrderBy(p => p.TotalSkillLevel)
                 .OrderBy(p => p.HighestSkillLevel)
                 ;
         }
 
-        public FileDataManager(FileData fileData)
+        private void SetContributorZeroSkills(FileData fileData)
         {
-            _filedata = fileData;
+            List<string> allSkills = new();
+            foreach (var project in fileData.Projects)
+            {
+                foreach (var skill in project.Skills)
+                {
+                    allSkills.Add(skill.Name);
+                }
+            }
+
+            allSkills = allSkills.Distinct().ToList();
+
+            foreach (var contributor in  fileData.Contributors)
+            {
+                foreach (var skill in allSkills)
+                {
+                    if (!contributor.Skills.Any(s => s.Name == skill))
+                    {
+                        contributor.Skills.Add(new Skill(skill));
+                    }
+                }
+            }
         }
     }
 }
