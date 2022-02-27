@@ -8,13 +8,18 @@ namespace HashCode2022.Entities
 {
     public class Contributor
     {
-        public string Name { get; set; }
+        public string Name { get; init; }
 
-        public List<Skill> Skills { get; set; } = new();
+        public List<Skill> Skills { get; init; } = new();
 
         public int AvailableDate { get; set; }
 
         public int HighestSkillLevel => Skills.Select(x => x.Level).Max();
+
+        public Contributor(string name)
+        {
+            Name = name;
+        }
     }
 
 
@@ -23,6 +28,5 @@ namespace HashCode2022.Entities
         public List<Contributor> Skills { get; set; } = new();
 
         public int Day { get; set; }
-
     }
 }

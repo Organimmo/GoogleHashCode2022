@@ -10,14 +10,13 @@ namespace HashCode2022
     public class FileDataManager
     {
         private readonly FileData _filedata;
-        private int projectWithoutContrubutersCount;
 
         public void AssignAll()
         {
             MatchProjectsAndContributors(_filedata.Projects);
         }
 
-        public List<Project> MatchProjectsAndContributors(List<Project> projects)
+        public List<Project>? MatchProjectsAndContributors(List<Project> projects)
         {
             List<Project> assignedList = new();
             List<Project> notAssignedList = new();
@@ -26,7 +25,6 @@ namespace HashCode2022
                 return projects;
             }
 
-            bool projectAssigned = false;
             List<Project> tempList = new();
 
             SortProjects();
@@ -54,19 +52,13 @@ namespace HashCode2022
             return null;
         }
 
-
-
-
-
-
-        private List<Tuple<string, Contributor>> ProjectCanBeAssigned(Project project)
+        private List<Tuple<string, Contributor>>? ProjectCanBeAssigned(Project project)
         {
-            int startDate = 0;
             List<Tuple<string, Contributor>> matchingContributors = new();
 
             foreach (var projectSkill in project.Skills)
             {
-                Contributor contributor = FindBestContributor(project, projectSkill, matchingContributors.Select(c => c.Item2).ToList());
+                Contributor? contributor = FindBestContributor(project, projectSkill, matchingContributors.Select(c => c.Item2).ToList());
 
                 // Check if project can be assigned
                 if (contributor == null)
@@ -78,7 +70,7 @@ namespace HashCode2022
             return matchingContributors;
         }
 
-        private Contributor FindBestContributor(Project project, Skill projectSkill, List<Contributor> matchingContributors)
+        private Contributor? FindBestContributor(Project project, Skill projectSkill, List<Contributor> matchingContributors)
         {
             foreach (var contributor in _filedata.Contributors
                 .OrderBy(d => d.AvailableDate)
@@ -125,6 +117,7 @@ namespace HashCode2022
 
         private void AssignProject(Project project, List<Tuple<string, Contributor>> matchingContributors)
         {
+            // Sanity check...
             System.Diagnostics.Debug.Assert(matchingContributors.Count == project.Skills.Count);
 
             int startDate = 0;
@@ -132,15 +125,16 @@ namespace HashCode2022
             {
                 var contributor = matchingContributors[i].Item2;
                 var projectSkill = project.Skills[i];
+
+                // Sanity check...
                 System.Diagnostics.Debug.Assert(matchingContributors[i].Item1 == projectSkill.Name);
 
-
                 // var contributorSkill = project.Skills.SingleOrDefault(x => x.Name == matchingContributors[i].Item1);
-                var contributorSkill = project.Skills.FirstOrDefault(x => x.Name == matchingContributors[i].Item1);
+                var contributorSkill = project.Skills.First(x => x.Name == matchingContributors[i].Item1);
                 // if skill level of contributor is same or 1 lower of project skill level --> increment contributor skill level
                 if (contributorSkill.Level <= projectSkill.Level)
                 {
-                    contributorSkill.Level++;
+                    contributorSkill.IncrementLevel();
                 }
 
                 // startdata of project is last available

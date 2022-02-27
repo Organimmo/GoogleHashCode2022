@@ -13,7 +13,7 @@ namespace HashCode2022.FileLogic
                 string[] columns;
 
                 // Line: <ContributorCount> <ProjectCount>
-                columns = sr.ReadLine().Split();
+                columns = ReadLine(sr);
 
                 var contributorCount = int.Parse(columns[0]); // C
                 var projectCount = int.Parse(columns[1]); // P
@@ -25,29 +25,20 @@ namespace HashCode2022.FileLogic
                 for (var contributorNo = 0; contributorNo < contributorCount; contributorNo++)
                 {
                     // Line: <ContributorName> <SkillCount>
-                    columns = sr.ReadLine().Split();
+                    columns = ReadLine(sr);
 
                     string name = columns[0];
                     int skillCount = int.Parse(columns[1]); // N
 
-                    var contributor = new Contributor()
-                    {
-                        Name = name,
-                        Skills = new()
-                    };
+                    var contributor = new Contributor(name);
 
                     // N skills of contributor
                     for (var skillNo = 0; skillNo < skillCount; skillNo++)
                     {
                         // Line: <SkillName> <SkillLevel>
-                        columns = sr.ReadLine().Split();
+                        columns = ReadLine(sr);
                         
-                        var skill = new Skill()
-                        {
-                            Name = columns[0],
-                            Level = int.Parse(columns[1])
-                        };
-
+                        var skill = new Skill(columns[0], int.Parse(columns[1]));
                         contributor.Skills.Add(skill);
                     }
 
@@ -58,28 +49,22 @@ namespace HashCode2022.FileLogic
                 for (var projectNo = 0; projectNo < projectCount; projectNo++)
                 {
                     // Line: <ProjectName> <DurationDays> <Score> <BestBefore> <RoleCount>
-                    columns = sr.ReadLine().Split();
+                    columns = ReadLine(sr);
 
-                    Project project = new Project()
-                    {
-                        Name = columns[0],
-                        Duration = int.Parse(columns[1]),
-                        Score = int.Parse(columns[2]),
-                        BestBefore = int.Parse(columns[3]),
-                        NumberOfRoles = int.Parse(columns[4]),
-                        Skills = new()
-                    };
+                    Project project = new Project(
+                        name: columns[0],
+                        duration: int.Parse(columns[1]),
+                        score: int.Parse(columns[2]),
+                        bestBefore: int.Parse(columns[3]));
 
-                    for (var skillNo = 0; skillNo < project.NumberOfRoles; skillNo++)
+                    int numberOfRoles = int.Parse(columns[4]);
+
+                    for (var skillNo = 0; skillNo < numberOfRoles; skillNo++)
                     {
                         // Line: <SkillName> <SkillRequiredLevel>
-                        columns = sr.ReadLine().Split();
+                        columns = ReadLine(sr);
 
-                        var skill = new Skill()
-                        {
-                            Name = columns[0],
-                            Level = int.Parse(columns[1])
-                        };
+                        var skill = new Skill(columns[0], int.Parse(columns[1]));
 
                         project.Skills.Add(skill);
                         if (!fileData.Skills.Contains(skill)) fileData.Skills.Add(skill);
@@ -90,6 +75,17 @@ namespace HashCode2022.FileLogic
             }
 
             return fileData;
+        }
+
+        private string[] ReadLine(StreamReader sr)
+        {
+            string? line = sr.ReadLine();
+            if (line == null)
+            {
+                throw new InvalidDataException("File is not in correct format");
+            }
+
+            return line.Split();
         }
     }
 }

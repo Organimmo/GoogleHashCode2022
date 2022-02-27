@@ -21,10 +21,11 @@ namespace HashCode2022
 
             if (!Directory.Exists(outputPath))
             {
+                Console.WriteLine($"Output directory {outputPath} does not exist, creating it");
                 Directory.CreateDirectory(outputPath);
             }
 
-            foreach (var file in Directory.GetFiles(inputPath))
+            foreach (var file in Directory.GetFiles(inputPath, "*.txt").OrderBy(f => f))
             {
                 RunSingleFile(file, Path.Combine(outputPath, Path.GetFileName(file)));
             }
@@ -32,13 +33,15 @@ namespace HashCode2022
 
         static void RunSingleFile(string fileNameInput, string fileNameOutput)
         {
+            Console.WriteLine("Processing file " + Path.GetFileName(fileNameInput));
+
             FileReader fileReader = new();
             FileData fileData = fileReader.ReadFrom(fileNameInput);
 
             SetContributorZeroSkills(fileData);
 
             // Run the algorithm
-            FileDataManager fileDataManager = new FileDataManager(fileData);
+            FileDataManager fileDataManager = new(fileData);
             fileDataManager.AssignAll();
 
             FileWriter fileWriter = new();
@@ -64,31 +67,10 @@ namespace HashCode2022
                 {
                     if (!contributor.Skills.Any(s => s.Name == skill))
                     {
-                        contributor.Skills.Add(
-                            new Skill() 
-                            { 
-                                Name = skill, 
-                                Level = 0
-                            });
+                        contributor.Skills.Add(new Skill(skill));
                     }
                 }
             }
         }
-
-        static void WriteFile(string fileName, FileData fileData)
-        {
-        }
-
-
-        public int CalculateTotalScore(List<Project> projects)
-        {
-            int sum = 0;
-            foreach (var project in projects)
-            {
-                sum += project.CalculateScore();
-            }
-            return sum;
-        }
-
     }
 }

@@ -8,31 +8,29 @@ namespace HashCode2022.Entities
 {
     public class Project
     {
-        public string Name { get; set; }
+        public string Name { get; init; }
 
-        public List<Skill> Skills { get; set; } = new();
+        public List<Skill> Skills { get; init; } = new();
 
         // added in order of skills
-        public List<Contributor> AssignedContributors { get; set; } = new();
+        public List<Contributor> AssignedContributors { get; init; } = new();
 
-        public int Duration { get; set; }
+        public int Duration { get; init; }
 
-        public int Score { get; set; }
+        public int Score { get; init; }
 
-        public int NumberOfRoles { get; set; }
-
-        public int LastDayOfWork { get; set; }
-
-        public int BestBefore { get; set; }
+        public int BestBefore { get; init; }
 
         public int HighestSkillLevel => Skills.Select(x => x.Level).Max();
 
         public int TotalSkillLevel => Skills.Select(x => x.Level).Sum();
 
-        public int CalculateScore()
+        public Project(string name, int duration, int score, int bestBefore)
         {
-            return -1; //score - (LastDayOfWork + 1 - BestBefore) > 0? score - (LastDayOfWork + 1 - BestBefore): 0;
+            Name = name;
+            Duration = duration;
+            Score = score;
+            BestBefore = bestBefore;
         }
-
     }
 }
