@@ -40,10 +40,10 @@ namespace HashCode2022
 
             // Run the algorithm
             Engine engine = new();
-            engine.Run(fileData);
+            var assignedProjects = engine.Run(fileData);
 
             FileWriter fileWriter = new();
-            fileWriter.WriteTo(fileNameOutput, fileData);
+            fileWriter.WriteTo(fileNameOutput, assignedProjects, fileData);
         }
     }
 }

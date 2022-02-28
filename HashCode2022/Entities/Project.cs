@@ -12,14 +12,17 @@ namespace HashCode2022.Entities
 
         public List<Skill> Skills { get; init; } = new();
 
-        // added in order of skills
-        public List<Contributor> AssignedContributors { get; init; } = new();
 
         public int Duration { get; init; }
 
         public int Score { get; init; }
 
         public int BestBefore { get; init; }
+
+
+        // added in order of skills
+        public List<Contributor> AssignedContributors { get; init; } = new();
+        public int? StartDate { get; set; }
 
         public int HighestSkillLevel => Skills.Select(x => x.Level).Max();
 

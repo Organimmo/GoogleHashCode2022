@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using HashCode2022.Entities;
@@ -7,17 +8,15 @@ namespace HashCode2022.FileLogic
 {
     internal class FileWriter
     {
-        internal void WriteTo(string fileName, FileData fileData)
+        internal void WriteTo(string fileName, List<Project> assignedProjects, FileData fileData)
         {
             using (var sr = new StreamWriter(fileName))
             {
-                var plannedProjects = fileData.Projects.Where(p => (p.AssignedContributors?.Count ?? 0) > 0);
-                
                 // Line: <PlannedProjectCount>
-                sr.WriteLine($"{plannedProjects.Count()}");
+                sr.WriteLine($"{assignedProjects.Count()}");
 
                 // Foreach Project
-                foreach (var project in plannedProjects)
+                foreach (var project in assignedProjects)
                 {
                     // Line: <ProjectName>
                     sr.WriteLine(project.Name);
