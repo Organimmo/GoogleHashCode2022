@@ -25,13 +25,16 @@ namespace HashCode2022
                 Directory.CreateDirectory(outputPath);
             }
 
+            long overallScore = 0;
             foreach (var file in Directory.GetFiles(inputPath, "*.txt").OrderBy(f => f))
             {
-                RunSingleFile(file, Path.Combine(outputPath, Path.GetFileName(file)));
+                overallScore += RunSingleFile(file, Path.Combine(outputPath, Path.GetFileName(file)));
             }
+
+            Console.WriteLine($"Overall score: {overallScore}");
         }
 
-        static void RunSingleFile(string fileNameInput, string fileNameOutput)
+        static long RunSingleFile(string fileNameInput, string fileNameOutput)
         {
             Console.WriteLine($"Processing file {Path.GetFileName(fileNameInput)}");
 
@@ -51,6 +54,8 @@ namespace HashCode2022
             // Write the output
             FileWriter fileWriter = new();
             fileWriter.WriteTo(fileNameOutput, assignedProjects, fileData);
+
+            return score;
         }
     }
 }
