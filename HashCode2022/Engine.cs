@@ -1,4 +1,4 @@
-﻿using HashCode2022.Entities;
+using HashCode2022.Entities;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -105,7 +105,6 @@ namespace HashCode2022
 
                 // contributor must have at least project skill - 1
                 if (contrSkill.Level < projectSkill.Level - 1)
-                // if (contrSkill.Level < projectSkill.Level)
                 {
                     continue;
                 }
