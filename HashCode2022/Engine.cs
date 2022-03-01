@@ -1,4 +1,4 @@
-using HashCode2022.Entities;
+﻿using HashCode2022.Entities;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -10,8 +10,6 @@ namespace HashCode2022
     {
         public List<Project> Run(FileData fileData)
         {
-            SetContributorZeroSkills(fileData);
-
             return MatchProjectsAndContributors(fileData, fileData.Projects);
         }
 
@@ -85,6 +83,8 @@ namespace HashCode2022
 
         private Contributor? FindBestContributor(FileData fileData, Project project, Skill projectSkill, List<MatchingContributor> matchingContributors)
         {
+            Skill ZeroSkill = new(projectSkill.Name, 0);
+
             foreach (var contributor in fileData.Contributors
                 .OrderBy(d => d.AvailableDate)
                 .OrderByDescending(d => d.HighestSkillLevel)
@@ -100,7 +100,14 @@ namespace HashCode2022
 
                 if (contrSkill == null)
                 {
-                    continue;
+                    if (projectSkill.Level > 1)
+                    {
+                        continue;
+                    }
+                    else
+                    {
+                        contrSkill = ZeroSkill;
+                    }
                 }
 
                 // contributor must have at least project skill - 1
@@ -147,7 +154,11 @@ namespace HashCode2022
                 System.Diagnostics.Debug.Assert(skillName == projectSkill.Name);
 
                 // Project can have dupplicate skills!
-                var contributorSkill = contributor.Skills.First(x => x.Name == skillName);
+                var contributorSkill = contributor.Skills.FirstOrDefault(x => x.Name == skillName);
+                if (contributorSkill == null)
+                {
+                    contributorSkill = new(skillName, 0);
+                }
 
                 System.Diagnostics.Debug.Assert(contributorSkill.Level >= projectSkill.Level - 1);
 
@@ -188,31 +199,6 @@ namespace HashCode2022
                 .OrderBy(p => p.TotalSkillLevel)
                 .OrderBy(p => p.HighestSkillLevel)
                 ;
-        }
-
-        private void SetContributorZeroSkills(FileData fileData)
-        {
-            List<string> allSkills = new();
-            foreach (var project in fileData.Projects)
-            {
-                foreach (var skill in project.Skills)
-                {
-                    allSkills.Add(skill.Name);
-                }
-            }
-
-            allSkills = allSkills.Distinct().ToList();
-
-            foreach (var contributor in  fileData.Contributors)
-            {
-                foreach (var skill in allSkills)
-                {
-                    if (!contributor.Skills.Any(s => s.Name == skill))
-                    {
-                        contributor.Skills.Add(new Skill(skill));
-                    }
-                }
-            }
         }
     }
 }
