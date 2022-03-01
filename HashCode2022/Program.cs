@@ -33,7 +33,7 @@ namespace HashCode2022
 
         static void RunSingleFile(string fileNameInput, string fileNameOutput)
         {
-            Console.WriteLine("Processing file " + Path.GetFileName(fileNameInput));
+            Console.WriteLine($"Processing file {Path.GetFileName(fileNameInput)}");
 
             FileReader fileReader = new();
             FileData fileData = fileReader.ReadFrom(fileNameInput);
@@ -42,6 +42,13 @@ namespace HashCode2022
             Engine engine = new();
             var assignedProjects = engine.Run(fileData);
 
+            // Calculate score
+            ScoreCalculator scoreCalculator = new();
+            var score = scoreCalculator.Calculate(assignedProjects);
+
+            Console.WriteLine($"Finished file {Path.GetFileName(fileNameInput)} with score {score}");
+
+            // Write the output
             FileWriter fileWriter = new();
             fileWriter.WriteTo(fileNameOutput, assignedProjects, fileData);
         }
