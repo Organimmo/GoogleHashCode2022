@@ -10,6 +10,5 @@ namespace HashCode2022.Entities
     {
         public List<Contributor> Contributors { get; set; } = new();
         public List<Project> Projects { get; set; } = new();
-        public List<Skill> Skills { get; set; } = new();
     }
 }

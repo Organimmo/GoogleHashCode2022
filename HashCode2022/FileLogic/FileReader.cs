@@ -67,7 +67,6 @@ namespace HashCode2022.FileLogic
                         var skill = new Skill(columns[0], int.Parse(columns[1]));
 
                         project.Skills.Add(skill);
-                        if (!fileData.Skills.Contains(skill)) fileData.Skills.Add(skill);
                     }
 
                     fileData.Projects.Add(project);
