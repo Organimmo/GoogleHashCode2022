@@ -1,4 +1,5 @@
 ﻿using HashCode2022.Entities;
+using HashCode2022.Strategies;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -8,6 +9,10 @@ namespace HashCode2022
 {
     public class Engine
     {
+        private readonly string _context;
+        private readonly IContributorStrategy _contributorStrategy;
+        private readonly IProjectStrategy _projectStrategy;
+
         public List<Project> Run(FileData fileData)
         {
             return MatchProjectsAndContributors(fileData, fileData.Projects);
@@ -16,6 +21,7 @@ namespace HashCode2022
         public List<Project> MatchProjectsAndContributors(FileData fileData, List<Project> projects)
         {
             List<Project> assignedList = new();
+            List<Project> droppedList = new();
             List<Project> notAssignedList = fileData.Projects;
 
             int run = 0;
@@ -28,32 +34,41 @@ namespace HashCode2022
 
                 {
                     var assignedPrc = Math.Round(100.0 * assignedList.Count / fileData.Projects.Count, 1);
-                    Console.WriteLine($"Run {run}: {assignedList.Count} assigned ({assignedPrc}%), {notAssignedList.Count} not assigned");
+                    if (_context != null)
+                    {
+                        Console.WriteLine($"{_context}: Run {run}: {assignedList.Count} assigned ({assignedPrc}%), {notAssignedList.Count} not assigned, {droppedList.Count} dropped");
+                    }
                 }
                 lastAssignedCount = 0;
 
                 var previousNotAssignedList = notAssignedList;
                 notAssignedList = new();
 
-                foreach (var project in SortProjects(previousNotAssignedList))
+                foreach (var project in _projectStrategy.GetProjectOrder(previousNotAssignedList.AsQueryable()))
                 {
                     var matchingContributors = ProjectCanBeAssigned(fileData, project);
                     if (matchingContributors != null)
                     {
-                        lastAssignedCount++;
-                        AssignProject(project, matchingContributors);
-                        assignedList.Add(project);
+                        if (AssignProject(project, matchingContributors))
+                        {
+                            lastAssignedCount++;
+                            assignedList.Add(project);
+                        }
+                        else
+                        {
+                            droppedList.Add(project);
+                        }
                     }
                     else
                     {
                         notAssignedList.Add(project);
                     }
 
-                    if (stopwatch.ElapsedMilliseconds >= nextProgress)
+                    if (_context != null && stopwatch.ElapsedMilliseconds >= nextProgress)
                     {
                         var processedPrc = Math.Round(100.0 * (assignedList.Count + notAssignedList.Count) / fileData.Projects.Count, 1);
                         var assignedPrc = Math.Round(100.0 * assignedList.Count / fileData.Projects.Count, 1);
-                        Console.WriteLine($"{stopwatch.ElapsedMilliseconds / 1000}s: {processedPrc}%, {assignedList.Count} assigned ({assignedPrc}%), {notAssignedList.Count} not assigned");
+                        Console.WriteLine($"{_context}: {stopwatch.ElapsedMilliseconds / 1000}s: {processedPrc}%, {assignedList.Count} assigned ({assignedPrc}%), {notAssignedList.Count} not assigned, {droppedList.Count} dropped");
                         nextProgress += 60000;
                     }
                 }
@@ -85,10 +100,7 @@ namespace HashCode2022
         {
             Skill ZeroSkill = new(projectSkill.Name, 0);
 
-            foreach (var contributor in fileData.Contributors
-                .OrderBy(d => d.AvailableDate)
-                .OrderByDescending(d => d.HighestSkillLevel)
-                )
+            foreach (var contributor in _contributorStrategy.GetContributorOrder(fileData.Contributors.AsQueryable(), projectSkill.Name, projectSkill.Level))
             {
                 // skip if contributor already a match
                 if (matchingContributors.Any(c => c.Contributor == contributor))
@@ -137,12 +149,40 @@ namespace HashCode2022
             return null;
         }
 
-        private void AssignProject(Project project, List<MatchingContributor> matchingContributors)
+        private bool AssignProject(Project project, List<MatchingContributor> matchingContributors)
         {
             // Sanity check...
             System.Diagnostics.Debug.Assert(matchingContributors.Count == project.Skills.Count);
 
+            // First determine if the project is useful to be executed
+            // We need start date first
             int startDate = 0;
+            // bool projectHasMentors = false;
+            for (int i = 0; i < matchingContributors.Count; i++)
+            {
+                var contributor = matchingContributors[i].Contributor;
+                if (contributor.AvailableDate > startDate)
+                {
+                    startDate = contributor.AvailableDate;
+                }
+
+                // if (matchingContributors[i].IsMentor)
+                // {
+                //     projectHasMentors = true;
+                // }
+            }
+
+            if (_projectStrategy.ShouldDropProject())
+            {
+                int overdue = startDate + project.Duration - project.BestBefore;
+                // Score = startDate + duration 
+                //if (overdue > 0 && overdue >= project.Score && !projectHasMentors)
+                if (overdue > 0 && overdue >= project.Score)
+                {
+                    return false;
+                }
+            }
+
             for (int i = 0; i < matchingContributors.Count; i++)
             {
                 var skillName = matchingContributors[i].SkillName;
@@ -169,17 +209,13 @@ namespace HashCode2022
                     contributorSkill.IncrementLevel();
                 }
 
-                // startdata of project is last available
-                if (contributor.AvailableDate > startDate)
-                {
-                    startDate = contributor.AvailableDate;
-                }
-
-                project.StartDate = startDate;
                 project.AssignedContributors.Add(contributor);
             }
 
+            project.StartDate = startDate;
+
             UpdateAvailabilityDates(matchingContributors, startDate + project.Duration);
+            return true;
         }
 
 
@@ -191,14 +227,11 @@ namespace HashCode2022
             }
         }
 
-        private IEnumerable<Project> SortProjects(List<Project> projects)
+        public Engine (string context, IContributorStrategy contributorStrategy, IProjectStrategy projectStrategy)
         {
-            // Switch around to optimise
-            return projects
-                .OrderBy(p => p.Duration)
-                .OrderBy(p => p.TotalSkillLevel)
-                .OrderBy(p => p.HighestSkillLevel)
-                ;
+            _context = context;
+            _contributorStrategy = contributorStrategy;
+            _projectStrategy = projectStrategy;
         }
     }
 }
