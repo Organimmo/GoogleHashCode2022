@@ -1,7 +1,7 @@
 using System;
 using HashCode2022.Entities;
 
-namespace HashCode2022
+namespace HashCode2022.Engine
 {
     public class MatchingContributor
     {

@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
-namespace HashCode2022
+namespace HashCode2022.Engine
 {
     public class Engine
     {

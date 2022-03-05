@@ -2,7 +2,7 @@ using System;
 
 namespace HashCode2022.Strategies
 {
-    class StrategySet
+    internal class StrategySet
     {
         public IContributorStrategy ContributorStrategy { get; init; }
         public IProjectStrategy ProjectStrategy { get; init; }
