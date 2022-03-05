@@ -117,6 +117,9 @@ namespace HashCode2022
             // new StrategySet(new ContributorStrategyF(), new ProjectStrategyO(1.0, -5.6, -76)),
             // new StrategySet(new ContributorStrategyF(), new ProjectStrategyO(1.0, -5.6, -78)),
         };
+        private readonly string inputPath;
+        private readonly string outputPath;
+        private readonly int fileNo;
 
         private long RunSingleFile(string fileNameInput, string outputPath, IEnumerable<StrategySet> strategySets)
         {
@@ -214,12 +217,19 @@ namespace HashCode2022
             // }
         }
 
-        public long RunAllFiles(string inputPath, string outputPath)
+        public long Run()
         {
             var strategySets = GetStrategySets();
 
+            var allFiles = Directory.GetFiles(inputPath, "*.txt").OrderBy(f => f);
+            IEnumerable<string> files;
+            if (fileNo == -1)
+                files = allFiles;
+            else
+                files = allFiles.Skip(fileNo).Take(1);
+
             long overallScore = 0;
-            foreach (var file in Directory.GetFiles(inputPath, "*.txt").OrderBy(f => f))
+            foreach (var file in files)
             {
                 overallScore += RunSingleFile(file, outputPath, strategySets);
             }
@@ -227,21 +237,11 @@ namespace HashCode2022
             return overallScore; 
         }
 
-        public long RunSingleFile(string inputPath, int fileNo, string outputPath)
+        public FixedDriver(string inputPath, string outputPath, int fileNo = -1)
         {
-            var strategySets = GetStrategySets();
-
-            long overallScore = 0;
-            foreach (var file in Directory.GetFiles(inputPath, "*.txt").OrderBy(f => f))
-            {
-                overallScore += RunSingleFile(file, outputPath, strategySets);
-            }
-
-            return overallScore; 
-        }
-
-        public FixedDriver()
-        {
+            this.inputPath = inputPath;
+            this.outputPath = outputPath;
+            this.fileNo = fileNo;
         }
     }
 }

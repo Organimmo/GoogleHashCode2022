@@ -21,8 +21,8 @@ namespace HashCode2022
             string inputPath = args[0];
             string outputPath = args[1];
 
-            FixedDriver fixedDriver = new();
-            long overallScore = fixedDriver.RunAllFiles(inputPath, outputPath);
+            FixedDriver fixedDriver = new(inputPath, outputPath);
+            long overallScore = fixedDriver.Run();
 
             Console.WriteLine($"Overall score: {overallScore}");
         }
