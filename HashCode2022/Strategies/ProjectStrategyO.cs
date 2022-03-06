@@ -6,14 +6,14 @@ namespace HashCode2022.Strategies
 {
     public class ProjectStrategyO : IProjectStrategy
     {
-        private readonly double scoreFactor;
-        private readonly double durationFactor;
-        private readonly double highestSkillLevelFactor;
+        public double ScoreFactor { get; init; }
+        public double DurationFactor { get; init; }
+        public double HighestSkillLevelFactor { get; init; }
 
         public IQueryable<Project> GetProjectOrder(IQueryable<Project> projects)
         {
             return projects
-                .OrderBy(p => p.BestBefore - p.Score * scoreFactor - p.Duration * durationFactor - p.TotalSkillLevel * highestSkillLevelFactor)
+                .OrderBy(p => p.BestBefore - p.Score * ScoreFactor - p.Duration * DurationFactor - p.TotalSkillLevel * HighestSkillLevelFactor)
                 ;
         }
 
@@ -24,14 +24,14 @@ namespace HashCode2022.Strategies
 
         public ProjectStrategyO(double scoreFactor, double durationFactor = 0.0, double highestSkillLevelFactor = 0.0)
         {
-            this.scoreFactor = scoreFactor;
-            this.durationFactor = durationFactor;
-            this.highestSkillLevelFactor = highestSkillLevelFactor;
+            this.ScoreFactor = scoreFactor;
+            this.DurationFactor = durationFactor;
+            this.HighestSkillLevelFactor = highestSkillLevelFactor;
         }
 
         public override string ToString()
         {
-            return $"PO({scoreFactor}, {durationFactor}, {highestSkillLevelFactor})";
+            return $"PO({ScoreFactor}, {DurationFactor}, {HighestSkillLevelFactor})";
         }
     }
 }

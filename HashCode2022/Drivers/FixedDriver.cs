@@ -1,14 +1,8 @@
-﻿using HashCode2022.Engine;
-using HashCode2022.Entities;
-using HashCode2022.FileLogic;
-using HashCode2022.Strategies;
-using System;
+﻿using HashCode2022.Strategies;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 
-namespace HashCode2022
+namespace HashCode2022.Drivers
 {
     internal class FixedDriver : Driver
     {
@@ -84,7 +78,7 @@ namespace HashCode2022
             // new StrategySet(new ContributorStrategyC(), new ProjectStrategyN()),
             // new StrategySet(new ContributorStrategyF(), new ProjectStrategyN()),
             // new StrategySet(new ContributorStrategyH(), new ProjectStrategyN()),
-            new StrategySet(new ContributorStrategyF(), new ProjectStrategyO(1.0, -4.0)), // best for file "c" and "e"
+            // new StrategySet(new ContributorStrategyF(), new ProjectStrategyO(1.0, -4.0)),
             // new StrategySet(new ContributorStrategyF(), new ProjectStrategyO(1.0, -7)),
             // new StrategySet(new ContributorStrategyF(), new ProjectStrategyO(1.0, -8)),
             // new StrategySet(new ContributorStrategyF(), new ProjectStrategyO(1.0, -9)),
@@ -99,7 +93,7 @@ namespace HashCode2022
             // new StrategySet(new ContributorStrategyF(), new ProjectStrategyO(1.0, -5.6, 10)),
             // new StrategySet(new ContributorStrategyF(), new ProjectStrategyO(1.0, -5.6, -100)),
             // new StrategySet(new ContributorStrategyF(), new ProjectStrategyO(1.0, -5.6, -50)),
-            new StrategySet(new ContributorStrategyF(), new ProjectStrategyO(1.0, -5.6, 50)), // Best for file "b"
+            // new StrategySet(new ContributorStrategyF(), new ProjectStrategyO(1.0, -5.6, 50)),
             // new StrategySet(new ContributorStrategyF(), new ProjectStrategyO(1.0, -5.6, 100)),
             // new StrategySet(new ContributorStrategyF(), new ProjectStrategyO(1.0, -5.6, -80)),
             // new StrategySet(new ContributorStrategyF(), new ProjectStrategyO(1.0, -5.6, -60)),
@@ -108,7 +102,7 @@ namespace HashCode2022
             // new StrategySet(new ContributorStrategyF(), new ProjectStrategyO(1.0, -5.6, -45)),
             // new StrategySet(new ContributorStrategyF(), new ProjectStrategyO(1.0, -5.6, -55)),
             // new StrategySet(new ContributorStrategyF(), new ProjectStrategyO(1.0, -5.6, -65)),
-            new StrategySet(new ContributorStrategyF(), new ProjectStrategyO(1.0, -5.6, -75)), // best for file "a"/"d"/"f"
+            new StrategySet(new ContributorStrategyF(), new ProjectStrategyO(1.0, -5.6, -75)), // best for file "a"/"d"
             // new StrategySet(new ContributorStrategyF(), new ProjectStrategyO(1.0, -5.6, -67)),
             // new StrategySet(new ContributorStrategyF(), new ProjectStrategyO(1.0, -5.6, -70)),
             // new StrategySet(new ContributorStrategyF(), new ProjectStrategyO(1.0, -5.6, -72)),
@@ -117,7 +111,17 @@ namespace HashCode2022
             // new StrategySet(new ContributorStrategyF(), new ProjectStrategyO(1.0, -5.6, -74)),
             // new StrategySet(new ContributorStrategyF(), new ProjectStrategyO(1.0, -5.6, -76)),
             // new StrategySet(new ContributorStrategyF(), new ProjectStrategyO(1.0, -5.6, -78)),
+            new StrategySet(new ContributorStrategyF(), new ProjectStrategyO(1.0, -4.2)), // best for "e"
+            new StrategySet(new ContributorStrategyF(), new ProjectStrategyO(0.12, 11.68, -24)), // best for file "b"
+            new StrategySet(new ContributorStrategyF(), new ProjectStrategyO(6.24, -12.16, -114)), // best for file "c"
+            new StrategySet(new ContributorStrategyF(), new ProjectStrategyO(-1.6, 4.96, -6)),
+            new StrategySet(new ContributorStrategyF(), new ProjectStrategyO(5.56, -13.04, -108)), // best for file "f"
         };
+
+        public FixedDriver(string inputPath, string outputPath, int fileNo = -1)
+        : base(inputPath, outputPath, fileNo)
+        {
+        }
 
         protected override IEnumerable<StrategySet> GetStrategySets()
         {
@@ -145,11 +149,6 @@ namespace HashCode2022
             //     double number = Math.Round(first + i * step, digits);
             //     yield return new StrategySet(new ContributorStrategyF(), new ProjectStrategyO(1.0, number));
             // }
-        }
-
-        public FixedDriver(string inputPath, string outputPath, int fileNo = -1)
-        : base(inputPath, outputPath, fileNo)
-        {
         }
     }
 }

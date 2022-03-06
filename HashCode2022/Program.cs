@@ -1,3 +1,4 @@
+using HashCode2022.Drivers;
 using HashCode2022.Entities;
 using HashCode2022.FileLogic;
 using HashCode2022.Strategies;
@@ -21,11 +22,12 @@ namespace HashCode2022
             string inputPath = args[0];
             string outputPath = args[1];
 
-            FixedDriver fixedDriver = new(inputPath, outputPath);
-            long overallScore = fixedDriver.Run();
+            Driver driver = new FixedDriver(inputPath, outputPath);
+            // Driver driver = new FixedDriver(inputPath, outputPath, 1);
+            // Driver driver = new SolvingDriver(inputPath, outputPath, 5);
+            Result result = driver.Run();
 
-            Console.WriteLine($"Overall score: {overallScore}");
+            Console.WriteLine($"Overall best score: {result.StrategySet} {result.Score}");
         }
-
     }
 }

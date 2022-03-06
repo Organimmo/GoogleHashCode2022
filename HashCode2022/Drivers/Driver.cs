@@ -3,12 +3,13 @@ using HashCode2022.Entities;
 using HashCode2022.FileLogic;
 using HashCode2022.Strategies;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace HashCode2022
+namespace HashCode2022.Drivers
 {
     internal abstract class Driver
     {
@@ -16,45 +17,45 @@ namespace HashCode2022
         private readonly string outputPath;
         private readonly int fileNo;
 
-        private long RunSingleFile(string fileNameInput, string outputPath, IEnumerable<StrategySet> strategySets)
-        {
-            // foreach (StrategySet strategySet in strategies) 
-            // { 
-            //     long score = RunSingleFileWithSingleStrategySet(fileNameInput, outputPath, strategySet); 
-            //     if (score > bestScore) 
-            //     { 
-            //         bestScore = score; 
-            //     } 
-            // }
+        // private long RunSingleFile(string fileNameInput, string outputPath, IEnumerable<StrategySet> strategySets)
+        // {
+        //     // foreach (StrategySet strategySet in strategies) 
+        //     // { 
+        //     //     long score = RunSingleFileWithSingleStrategySet(fileNameInput, outputPath, strategySet); 
+        //     //     if (score > bestScore) 
+        //     //     { 
+        //     //         bestScore = score; 
+        //     //     } 
+        //     // }
 
-            long bestScore = 0;
+        //     long bestScore = 0;
 
-            List<Tuple<StrategySet, Task<long>>> tasks = new();
-            foreach (StrategySet strategySet in strategySets)
-            {
+        //     List<Tuple<StrategySet, Task<long>>> tasks = new();
+        //     foreach (StrategySet strategySet in strategySets)
+        //     {
 
-                tasks.Add(
-                    new Tuple<StrategySet, Task<long>>(
-                        strategySet, 
-                        Task.Run(() => RunSingleFileWithSingleStrategySet(fileNameInput, outputPath, strategySet))));
-            }
+        //         tasks.Add(
+        //             new Tuple<StrategySet, Task<long>>(
+        //                 strategySet, 
+        //                 Task.Run(() => RunSingleFileWithSingleStrategySet(fileNameInput, outputPath, strategySet))));
+        //     }
 
-            Task.WaitAll(tasks.Select(s => s.Item2).ToArray());
-            Console.WriteLine($"Summary for: {Path.GetFileName(fileNameInput)}:");
-            foreach (var task in tasks)
-            {
-                var result = task.Item2.Result;
-                Console.WriteLine($"{task.Item1.ToString()}: {result}");
-                if (result > bestScore)
-                {
-                    bestScore = result;
-                }
-            }
+        //     Task.WaitAll(tasks.Select(s => s.Item2).ToArray());
+        //     Console.WriteLine($"Summary for: {Path.GetFileName(fileNameInput)}:");
+        //     foreach (var task in tasks)
+        //     {
+        //         var result = task.Item2.Result;
+        //         Console.WriteLine($"{task.Item1.ToString()}: {result}");
+        //         if (result > bestScore)
+        //         {
+        //             bestScore = result;
+        //         }
+        //     }
 
-            return bestScore;
-        }
+        //     return bestScore;
+        // }
 
-        private long RunSingleFileWithSingleStrategySet(string fileNameInput, string outputPath, StrategySet strategySet)
+        private Result RunSingleFileWithSingleStrategySet(string fileNameInput, string outputPath, StrategySet strategySet)
         {
             string context = $"{Path.GetFileName(fileNameInput)}/{strategySet}";
             Console.WriteLine($"{context}: Processing file");
@@ -81,15 +82,13 @@ namespace HashCode2022
             }
             fileWriter.WriteTo(Path.Combine(outputPath2, "out.txt"), assignedProjects, fileData);
 
-            return score;
+            return new Result(Path.GetFileName(fileNameInput), score, strategySet);
         }
 
         protected abstract IEnumerable<StrategySet> GetStrategySets();
 
-        public long Run()
+        public virtual Result RunSingleStrategySet(StrategySet strategySet)
         {
-            var strategySets = GetStrategySets();
-
             var allFiles = Directory.GetFiles(inputPath, "*.txt").OrderBy(f => f);
             IEnumerable<string> files;
             if (fileNo == -1)
@@ -97,13 +96,48 @@ namespace HashCode2022
             else
                 files = allFiles.Skip(fileNo).Take(1);
 
-            long overallScore = 0;
+            List<Result> results = new();
             foreach (var file in files)
             {
-                overallScore += RunSingleFile(file, outputPath, strategySets);
+                var result = RunSingleFileWithSingleStrategySet(file, outputPath, strategySet);
+                results.Add(result);
             }
 
-            return overallScore; 
+            var overallScore = results.Sum(r => r.Score);
+            return new Result(overallScore, strategySet, results); 
+        }
+
+        public virtual Result Run()
+        {
+            var strategySets = GetStrategySets();
+
+            ConcurrentQueue<StrategySet> strategySetQueue = new(strategySets);
+            ConcurrentBag<Result> results = new();
+
+            List<Task> tasks = new();
+            for (int i = 0; i < Environment.ProcessorCount; i++)
+            {
+                tasks.Add(
+                    Task.Run(() =>
+                    {
+                        while (strategySetQueue.TryDequeue(out StrategySet? strategySet) && strategySet != null)
+                        {
+                            Result result = RunSingleStrategySet(strategySet);
+                            results.Add(result);
+                        }
+                    }));
+            }
+
+            Task.WaitAll(tasks.ToArray());
+
+            foreach (var result in results)
+            {
+                Console.WriteLine($"{result.StrategySet?.ToString()}: {result.Score}");
+            }
+
+            var bestResult = results.OrderByDescending(r => r.Score).First();
+
+            return new Result(bestResult.Score, bestResult.StrategySet ?? throw new InvalidOperationException(), results.ToList());
         }
 
         public Driver(string inputPath, string outputPath, int fileNo = -1)
